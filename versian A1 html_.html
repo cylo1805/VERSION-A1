@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historia Clínica Estética</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fdf6ff;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #cba7e0;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    h2, h3 {
+      color: #7b4f9d;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    canvas {
+      border: 1px solid #999;
+      margin-top: 0.5rem;
+    }
+    button {
+      margin-top: 1rem;
+      background-color: #a66bbd;
+      color: white;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Historia Clínica Estética</h1>
+  </header>
+  <div class="container">
+    <form id="formulario">
+      <label>Nombre de la clínica:</label>
+      <input type="text" id="nombreClinica" value="Clínica Vive Bella - Medicina Estética y Bienestar" />
+
+      <label>Pie de página del consentimiento:</label>
+      <input type="text" id="pieClinica" value="Contacto: vivebellaxalapa2@gmail.com | Tel: 228-000-0000" />
+
+      <h2>Historia Clínica</h2>
+      <label>Edad:</label>
+      <input type="number" name="edad" required />
+
+      <label>Sexo:</label>
+      <select name="sexo" required>
+        <option value="">Selecciona</option>
+        <option value="femenino">Femenino</option>
+        <option value="masculino">Masculino</option>
+        <option value="otro">Otro</option>
+      </select>
+
+      <label>Fecha de nacimiento:</label>
+      <input type="date" name="fechaNacimiento" required />
+
+      <label>Ocupación:</label>
+      <input type="text" name="ocupacion" required />
+
+      <h3>Antecedentes Personales</h3>
+      <label>Enfermedades crónicas:</label>
+      <input type="text" name="enfermedadesCronicas" />
+
+      <label>Alergias:</label>
+      <input type="text" name="alergias" />
+
+      <label>Cirugías previas:</label>
+      <input type="text" name="cirugiasPrevias" />
+
+      <label>Medicamentos actuales:</label>
+      <input type="text" name="medicamentosActuales" />
+
+      <label>Antecedentes estéticos previos:</label>
+      <input type="text" name="antecedentesEsteticos" />
+
+      <h3>Describir motivo</h3>
+      <textarea name="motivoConsulta" rows="3" placeholder="Describa el motivo de la consulta"></textarea>
+
+      <h3>Exploración física</h3>
+      <label>Peso (kg):</label>
+      <input type="number" name="peso" step="0.1" />
+
+      <label>Talla (cm):</label>
+      <input type="number" name="talla" step="0.1" />
+
+      <label>Observaciones médicas:</label>
+      <textarea name="observaciones" rows="3"></textarea>
+
+      <label>Servicio Realizado:</label>
+      <select name="servicioRealizado" id="servicio" onchange="cargarConsentimiento()">
+        <option value="">Selecciona un servicio</option>
+        <option value="hidrolipoclasia">Hidrolipoclasia</option>
+        <option value="sculptra">Sculptra</option>
+        <option value="peptonas">Peptonas en glúteo</option>
+      </select>
+
+      <label>Consentimiento Informado:</label>
+      <textarea name="consentimientoTexto" id="consentimientoTexto" rows="6" required></textarea>
+
+      <label>Nombre del paciente:</label>
+      <input type="text" name="nombres" required />
+
+      <label>Apellidos:</label>
+      <input type="text" name="apellidos" required />
+
+      <label>Fecha de consulta:</label>
+      <input type="date" name="fechaConsulta" required />
+
+      <label>Firma del paciente:</label>
+      <canvas id="firma" width="300" height="100"></canvas>
+
+      <input type="hidden" name="firmaImagen" id="firmaImagen" />
+      <button type="submit">Enviar</button>
+      <button type="button" onclick="guardarPDFenDrive()">Guardar en Drive</button>
+      <button type="button" onclick="verHistorial()">Ver historial por paciente</button>
+
+      <label>Agregar nuevo consentimiento:</label>
+      <input type="text" id="nuevoServicio" placeholder="Nombre del nuevo servicio">
+      <textarea id="nuevoTexto" rows="5" placeholder="Texto del consentimiento"></textarea>
+      <button type="button" onclick="agregarNuevoConsentimiento()">Guardar consentimiento</button>
+
+      <label>Editar consentimiento existente:</label>
+      <select id="editarServicio"></select>
+      <textarea id="editarTexto" rows="5" placeholder="Modificar texto del consentimiento"></textarea>
+      <button type="button" onclick="editarConsentimiento()">Guardar cambios</button>
+      <button type="button" onclick="eliminarConsentimiento()">Eliminar consentimiento</button>
+    </form>
+
+    <div id="panelHistorial" style="margin-top: 2rem; display: none;">
+      <h2>Historial del Paciente</h2>
+      <button onclick="imprimirHistorial()">Imprimir historial</button>
+      <button onclick="cerrarHistorial()">Cerrar historial</button>
+      <iframe id="iframeHistorial" width="100%" height="500px" style="border:1px solid #ccc;"></iframe>
+    </div>
+  </div>
+</body>
+</html>
